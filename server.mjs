@@ -2,10 +2,12 @@ import http from 'node:http';
 import { readFile, mkdir, writeFile, rename } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { discover } from './lib/discovery.mjs';
+import { savedRows, filterRows, summarize, refreshMs } from './lib/api.mjs';
 
 const port = Number(process.env.LOCALHOST_TREE_PORT || 7341);
 if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('Invalid LOCALHOST_TREE_PORT');
 const base = new URL('./', import.meta.url);
+const { version } = JSON.parse(await readFile(new URL('./package.json', base), 'utf8'));
 const settingsFile = new URL('./data/ports.json', base);
 let settings = {};
 try { settings = JSON.parse(await readFile(settingsFile, 'utf8')); }
@@ -22,10 +24,15 @@ async function snapshot() {
 
 function send(res, status, value) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
-  res.end(JSON.stringify(value));
+  res.end(JSON.stringify(value, null, 2) + '\n');
 }
 
-const assets = { '/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/style.css': ['style.css', 'text/css'], '/icon.svg': ['icon.svg', 'image/svg+xml'] };
+const assets = { '/': ['index.html', 'text/html'], '/widget': ['index.html', 'text/html'], '/widget/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/style.css': ['style.css', 'text/css'], '/api.js': ['api.js', 'text/javascript'], '/api.css': ['api.css', 'text/css'], '/icon.svg': ['icon.svg', 'image/svg+xml'] };
+async function asset(res, file, type) {
+  const content = await readFile(new URL(`./public/${file}`, base));
+  res.writeHead(200, { 'Content-Type': `${type}; charset=utf-8`, 'Cache-Control': 'no-cache' });
+  res.end(content);
+}
 const server = http.createServer(async (req, res) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');
@@ -34,15 +41,17 @@ const server = http.createServer(async (req, res) => {
   if (req.headers.origin && ![`http://127.0.0.1:${port}`, `http://localhost:${port}`].includes(req.headers.origin)) return send(res, 403, { error: 'Origin rejected' });
   try {
     const url = new URL(req.url, `http://127.0.0.1:${port}`);
-    if (req.method === 'GET' && url.pathname === '/api/health') return send(res, 200, { app: 'localhost-tree', port });
-    if (req.method === 'GET' && url.pathname === '/api/ports') {
+    const apiRoot = url.pathname === '/api' || url.pathname === '/api/';
+    if (apiRoot) res.setHeader('Vary', 'Accept');
+    if (req.method === 'GET' && apiRoot && url.searchParams.get('format') !== 'json' && String(req.headers.accept || '').includes('text/html')) return await asset(res, 'api.html', 'text/html');
+    if (req.method === 'GET' && url.pathname === '/api/health') return send(res, 200, { app: 'localhost-tree', version, port });
+    if (req.method === 'GET' && (apiRoot || url.pathname === '/api/ports')) {
       const data = await snapshot();
-      const rows = data.rows.map(row => ({ ...row, customName: settings[row.port]?.name || '', favorite: Boolean(settings[row.port]?.favorite), name: settings[row.port]?.name || row.name }));
-      const active = new Set(rows.map(row => String(row.port)));
-      for (const [savedPort, meta] of Object.entries(settings)) {
-        if (!active.has(savedPort) && (meta.name || meta.favorite)) rows.push({ port: Number(savedPort), name: meta.name || `Порт ${savedPort}`, customName: meta.name || '', favorite: Boolean(meta.favorite), online: false, system: false, kind: 'service', addresses: [] });
-      }
-      return send(res, 200, { updatedAt: new Date(data.time).toISOString(), refreshMs: 8000, ports: rows.sort((a, b) => a.port - b.port) });
+      let rows;
+      try { rows = filterRows(savedRows(data.rows, settings), url.searchParams); }
+      catch (error) { return send(res, 400, { error: error.message }); }
+      const result = apiRoot ? { app: 'localhost-tree', version, updatedAt: new Date(data.time).toISOString(), refreshMs, summary: summarize(rows), endpoints: { dashboard: '/', widget: '/widget', explorer: '/api', json: '/api?format=json', ports: '/api/ports', health: '/api/health' }, ports: rows } : { updatedAt: new Date(data.time).toISOString(), refreshMs, ports: rows };
+      return send(res, 200, result);
     }
     const match = url.pathname.match(/^\/api\/ports\/(\d+)$/);
     if (req.method === 'POST' && match) {
@@ -72,9 +81,7 @@ const server = http.createServer(async (req, res) => {
     }
     if (req.method === 'GET' && assets[url.pathname]) {
       const [file, type] = assets[url.pathname];
-      const content = await readFile(new URL(`./public/${file}`, base));
-      res.writeHead(200, { 'Content-Type': `${type}; charset=utf-8`, 'Cache-Control': 'no-cache' });
-      return res.end(content);
+      return await asset(res, file, type);
     }
     send(res, 404, { error: 'Not found' });
   } catch (error) {

@@ -2,7 +2,13 @@ const $ = selector => document.querySelector(selector);
 const state = { rows: [], filter: 'all', query: '', showSystem: localStorage.getItem('show-system') === 'true', loading: false, editing: null };
 const labels = { web: 'Веб-приложение', service: 'Сервис', database: 'База данных' };
 const symbols = { web: '⌘', service: '›_', database: '▤', system: '⚙' };
-if (new URLSearchParams(location.search).has('widget')) document.body.classList.add('widget');
+const isWidget = location.pathname.replace(/\/$/, '') === '/widget' || new URLSearchParams(location.search).has('widget');
+if (isWidget) { document.body.classList.add('widget'); document.title = 'Localhost Tree — виджет'; }
+document.querySelectorAll('[data-view]').forEach(link => {
+  const active = link.dataset.view === (isWidget ? 'widget' : 'browser');
+  link.classList.toggle('current', active);
+  if (active) link.setAttribute('aria-current', 'page');
+});
 $('#show-system').checked = state.showSystem;
 
 function node(tag, className, text) {

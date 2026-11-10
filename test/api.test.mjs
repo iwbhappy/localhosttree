@@ -16,7 +16,7 @@ test('live Windows API: scan, persistence, stopped ports, validation and origin 
   await new Promise(resolve => reservation.listen(0, '127.0.0.1', resolve));
   const port = reservation.address().port;
   await new Promise(resolve => reservation.close(resolve));
-  for (const file of ['server.mjs', 'lib', 'scripts', 'public']) await cp(new URL(`../${file}`, import.meta.url), path.join(directory, file), { recursive: true });
+  for (const file of ['server.mjs', 'package.json', 'lib', 'scripts', 'public']) await cp(new URL(`../${file}`, import.meta.url), path.join(directory, file), { recursive: true });
   const server = spawn(process.execPath, [path.join(directory, 'server.mjs')], { env: { ...process.env, LOCALHOST_TREE_PORT: String(port) }, windowsHide: true, stdio: 'ignore' });
   t.after(async () => {
     fixture.close();
@@ -39,6 +39,21 @@ test('live Windows API: scan, persistence, stopped ports, validation and origin 
   const fixtureRow = data.ports.find(row => row.port === fixturePort);
   assert.equal(fixtureRow.name, 'Tree integration fixture'); assert.equal(fixtureRow.online, true);
   assert.equal(JSON.stringify(data).includes('CommandLine'), false);
+  const explorer = await fetch(`${base}/api`, { headers: { Accept: 'text/html' } });
+  assert.equal(explorer.status, 200); assert.match(explorer.headers.get('content-type'), /text\/html/);
+  assert.equal(explorer.headers.get('vary'), 'Accept'); assert.match(await explorer.text(), /\/api\.js/);
+  assert.match((await fetch(`${base}/api/`, { headers: { Accept: 'text/html' } })).headers.get('content-type'), /text\/html/);
+  assert.match(await (await fetch(`${base}/widget`)).text(), /data-view="widget"/);
+  const root = await (await fetch(`${base}/api`)).json();
+  assert.equal(root.app, 'localhost-tree'); assert.equal(root.summary.total, root.ports.length);
+  assert.equal(root.summary.online, root.ports.filter(row => row.online).length);
+  assert.equal(root.endpoints.widget, '/widget');
+  const forced = await fetch(`${base}/api?format=json`, { headers: { Accept: 'text/html' } });
+  assert.match(forced.headers.get('content-type'), /application\/json/);
+  assert.equal((await forced.json()).app, 'localhost-tree');
+  const filtered = await (await fetch(`${base}/api/ports?q=${fixturePort}&status=online&system=false`)).json();
+  assert.deepEqual(filtered.ports.map(row => row.port), [fixturePort]);
+  for (const query of ['status=unknown', 'kind=unknown', 'system=maybe', 'favorites=maybe']) assert.equal((await fetch(`${base}/api/ports?${query}`)).status, 400);
   const update = body => fetch(`${base}/api/ports/${fixturePort}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   assert.equal((await update({ name: 'SafeWay', favorite: true })).status, 200);
   assert.equal((await update({ name: 123 })).status, 400);
@@ -46,10 +61,14 @@ test('live Windows API: scan, persistence, stopped ports, validation and origin 
   assert.equal((await update(null)).status, 400);
   const saved = (await (await fetch(`${base}/api/ports`)).json()).ports.find(row => row.port === fixturePort);
   assert.equal(saved.name, 'SafeWay'); assert.equal(saved.favorite, true);
+  const favorites = await (await fetch(`${base}/api?favorites=true`)).json();
+  assert.equal(favorites.summary.total, 1); assert.equal(favorites.ports[0].port, fixturePort);
   await new Promise(resolve => fixture.close(resolve));
   await delay(4200);
   const offline = (await (await fetch(`${base}/api/ports`)).json()).ports.find(row => row.port === fixturePort);
   assert.equal(offline.online, false); assert.equal(offline.name, 'SafeWay');
+  const stopped = await (await fetch(`${base}/api/ports?status=offline&q=SafeWay`)).json();
+  assert.equal(stopped.ports[0].port, fixturePort);
   const persisted = JSON.parse(await (await import('node:fs/promises')).readFile(path.join(directory, 'data/ports.json'), 'utf8'));
   assert.equal(persisted[fixturePort].name, 'SafeWay');
   assert.equal((await update({ name: '', favorite: false })).status, 200);

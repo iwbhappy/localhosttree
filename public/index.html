@@ -7,7 +7,7 @@
 </head>
 <body>
   <div class="shell">
-    <header class="topbar"><a class="brand" href="/"><img src="/icon.svg" width="32" height="32" alt=""><span>localhost<span class="brand-muted"> / tree</span></span></a><div class="machine"><span class="status-dot"></span>На этом компьютере <span class="local-label">LOCAL</span></div></header>
+    <header class="topbar"><a class="brand" href="/"><img src="/icon.svg" width="32" height="32" alt=""><span>localhost<span class="brand-muted"> / tree</span></span></a><nav class="view-nav" aria-label="Режим приложения"><a href="/" data-view="browser">Панель</a><a href="/widget" data-view="widget">Виджет</a><a href="/api">API <span aria-hidden="true">↗</span></a></nav></header>
     <main>
       <div class="page-heading"><div><div class="eyebrow">ТВОЯ ЛОКАЛЬНАЯ СРЕДА</div><h1>Что на каком порту.</h1><p class="intro">Все запущенные проекты. Один взгляд — и всё на месте.</p></div><button class="button" id="refresh"><span class="refresh-icon">↻</span> Обновить</button></div>
       <div class="stats"><div class="stat"><span class="stat-label">Активные порты</span><strong id="stat-active">—</strong><span class="stat-foot"><span class="status-dot"></span>Проекты и сервисы</span></div><div class="stat"><span class="stat-label">Веб-приложения</span><strong id="stat-web">—</strong><span class="stat-foot">Открываются в браузере <span>↗</span></span></div><div class="stat"><span class="stat-label">В избранном</span><strong id="stat-favorites">—</strong><span class="stat-foot">Всегда под рукой <span>☆</span></span></div></div>
@@ -20,7 +20,7 @@
       </section>
       <aside class="tip"><span class="tip-symbol">↳</span><p><strong>Дай порту понятное имя.</strong> Нажми на карандаш рядом с проектом, чтобы подписать его — например, SafeWay. Имя останется, даже когда проект выключен.</p><span class="key-hint">автообновление / 8 сек</span></aside>
     </main>
-    <footer class="page-footer"><span><span class="status-dot"></span>Данные остаются на твоём компьютере</span><span>localhost tree <span class="footer-version">v1.0</span></span></footer>
+    <footer class="page-footer"><span><span class="status-dot"></span>Данные остаются на твоём компьютере</span><span>localhost tree <span class="footer-version">v1.1</span></span></footer>
   </div>
   <dialog id="edit-dialog"><form id="edit-form"><div class="dialog-heading"><h2>Название проекта</h2><button type="button" class="icon-button" id="close-dialog" aria-label="Закрыть">×</button></div><p id="edit-port"></p><label for="project-name">Как подписать этот порт</label><input id="project-name" maxlength="100" placeholder="Например, SafeWay" autocomplete="off"><p class="input-help">Оставь поле пустым, чтобы вернуть автоматическое название.</p><div class="dialog-actions"><button type="button" class="button" id="cancel-edit">Отмена</button><button type="submit" class="button primary" id="save-name">Сохранить</button></div><p id="edit-error" role="alert" hidden></p></form></dialog>
 </body>

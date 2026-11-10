@@ -1,11 +1,16 @@
 {
   "name": "localhost-tree",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "A local Windows dashboard for listening ports and their projects.",
   "scripts": {
     "start": "node server.mjs",
+    "launch": "powershell -NoProfile -STA -ExecutionPolicy Bypass -File ./Start-LocalhostTree.ps1 -Choose",
+    "browser": "powershell -NoProfile -STA -ExecutionPolicy Bypass -File ./Start-LocalhostTree.ps1 -Browser",
+    "widget": "powershell -NoProfile -STA -ExecutionPolicy Bypass -File ./Start-LocalhostTree.ps1 -Widget",
+    "api": "powershell -NoProfile -STA -ExecutionPolicy Bypass -File ./Start-LocalhostTree.ps1 -Api",
+    "shortcuts": "powershell -NoProfile -ExecutionPolicy Bypass -File ./Install-Shortcuts.ps1",
     "test": "node --test"
   },
   "engines": { "node": ">=20" }

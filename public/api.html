@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Локальный API портов: просмотр, фильтры и копирование JSON">
+  <title>Localhost Tree — API</title><link rel="icon" href="/icon.svg"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/api.css"><script type="module" src="/api.js"></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar"><a class="brand" href="/"><img src="/icon.svg" width="32" height="32" alt=""><span>localhost<span class="brand-muted"> / tree</span></span></a><nav class="view-nav" aria-label="Режим приложения"><a href="/">Панель</a><a href="/widget">Виджет</a><a class="current" href="/api" aria-current="page">API</a></nav></header>
+    <main>
+      <div class="page-heading"><div><div class="eyebrow">ДАННЫЕ ДЛЯ ТВОИХ ИНСТРУМЕНТОВ</div><h1>Локальный API.</h1><p class="intro">Смотри порты, фильтруй ответы и забирай JSON в свои скрипты.</p></div><a class="button" href="/api?format=json" target="_blank" rel="noopener">Открыть JSON ↗</a></div>
+      <section class="api-controls" aria-label="Настройки запроса">
+        <div class="endpoint-tabs" role="group" aria-label="Адрес запроса"><button class="endpoint current" data-endpoint="/api" aria-pressed="true">GET /api</button><button class="endpoint" data-endpoint="/api/ports" aria-pressed="false">GET /api/ports</button><button class="endpoint" data-endpoint="/api/health" aria-pressed="false">GET /api/health</button></div>
+        <div class="api-filters"><label>Поиск<input id="api-search" type="search" placeholder="Порт, проект, процесс…"></label><label>Статус<select id="api-status"><option value="">Любой</option><option value="online">Запущен</option><option value="offline">Выключен</option></select></label><label>Тип<select id="api-kind"><option value="">Любой</option><option value="web">Веб-приложение</option><option value="service">Сервис</option><option value="database">База данных</option></select></label><label class="check-label"><input id="api-system" type="checkbox">Системные</label><label class="check-label"><input id="api-favorites" type="checkbox">Избранное</label></div>
+      </section>
+      <div class="request-bar"><span class="http-method">GET</span><code id="request-url"></code><button class="button primary" id="api-refresh">Выполнить ↗</button></div>
+      <div class="response-meta"><span class="live" id="api-live"><span class="status-dot"></span><span id="api-status-text">Подключение…</span></span><span id="api-summary"></span><label class="system-toggle"><input id="api-auto" type="checkbox" checked>Обновлять / 8 сек</label></div>
+      <div id="api-error" role="alert" hidden></div>
+      <section class="json-panel" aria-label="Ответ API"><div class="json-toolbar"><span>Ответ <span class="json-format">application/json</span></span><div><button class="button" id="copy-json" disabled>Копировать JSON</button><button class="button" id="download-json" disabled>Скачать</button></div></div><pre id="json-response" tabindex="0" aria-label="Ответ в формате JSON">Ожидание ответа…</pre></section>
+      <details class="api-reference"><summary>Как обратиться из своего кода</summary><p>В браузере <code>/api</code> показывает эту страницу. Для JSON используй <code>/api?format=json</code> или заголовок <code>Accept: application/json</code>. Без заголовка Accept также возвращается JSON.</p><pre id="api-example"></pre><p>Фильтры: <code>q</code>, <code>status=online|offline</code>, <code>kind=web|service|database</code>, <code>system=true|false</code>, <code>favorites=true|false</code>. Они доступны на <code>/api</code> и <code>/api/ports</code>; <code>/api/health</code> возвращает сведения о сервере.</p><p>Подписи и избранное сохраняются через <code>POST /api/ports/:port</code> с JSON <code>{"name":"SafeWay","favorite":true}</code>. Эта страница выполняет только GET-запросы.</p></details>
+    </main>
+    <footer class="page-footer"><span><span class="status-dot"></span>API доступно только на этом компьютере</span><a href="/">Вернуться к портам ↗</a></footer>
+  </div>
+</body>
+</html>
