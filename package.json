@@ -1,0 +1,12 @@
+{
+  "name": "localhost-tree",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A local Windows dashboard for listening ports and their projects.",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test"
+  },
+  "engines": { "node": ">=20" }
+}

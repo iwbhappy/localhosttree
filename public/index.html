@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f6f7f3"><meta name="description" content="Ваши локальные проекты и порты в одном месте">
+  <title>Localhost Tree — локальные проекты</title><link rel="icon" href="/icon.svg"><link rel="stylesheet" href="/style.css"><script type="module" src="/app.js"></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar"><a class="brand" href="/"><img src="/icon.svg" width="32" height="32" alt=""><span>localhost<span class="brand-muted"> / tree</span></span></a><div class="machine"><span class="status-dot"></span>На этом компьютере <span class="local-label">LOCAL</span></div></header>
+    <main>
+      <div class="page-heading"><div><div class="eyebrow">ТВОЯ ЛОКАЛЬНАЯ СРЕДА</div><h1>Что на каком порту.</h1><p class="intro">Все запущенные проекты. Один взгляд — и всё на месте.</p></div><button class="button" id="refresh"><span class="refresh-icon">↻</span> Обновить</button></div>
+      <div class="stats"><div class="stat"><span class="stat-label">Активные порты</span><strong id="stat-active">—</strong><span class="stat-foot"><span class="status-dot"></span>Проекты и сервисы</span></div><div class="stat"><span class="stat-label">Веб-приложения</span><strong id="stat-web">—</strong><span class="stat-foot">Открываются в браузере <span>↗</span></span></div><div class="stat"><span class="stat-label">В избранном</span><strong id="stat-favorites">—</strong><span class="stat-foot">Всегда под рукой <span>☆</span></span></div></div>
+      <section class="workspace" aria-label="Список портов">
+        <div class="workspace-top"><div class="section-title">Порты и проекты <span id="row-count" class="count">0</span></div><div class="live" id="live"><span class="status-dot"></span><span id="live-text">Подключение…</span></div></div>
+        <div class="toolbar"><nav class="filters" aria-label="Фильтр портов"><button class="filter active" data-filter="all" aria-pressed="true">Все</button><button class="filter" data-filter="web" aria-pressed="false">Веб</button><button class="filter" data-filter="service" aria-pressed="false">Сервисы</button><button class="filter" data-filter="favorites" aria-pressed="false">☆ Избранное</button></nav><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Название, порт или процесс…" aria-label="Поиск по портам"></label></div>
+        <div id="error" role="alert" hidden></div>
+        <div class="table-scroll"><table><thead><tr><th class="favorite-col"><span class="sr-only">Избранное</span></th><th>ПРОЕКТ / СЕРВИС</th><th>ПОРТ</th><th>ПРОЦЕСС</th><th>СТАТУС</th><th><span class="sr-only">Действия</span></th></tr></thead><tbody id="ports"><tr><td colspan="6" class="empty">Смотрим, что запущено на компьютере…</td></tr></tbody></table></div>
+        <div class="workspace-footer"><label class="system-toggle"><input id="show-system" type="checkbox"> Показывать системные порты</label><span id="updated">Первое сканирование…</span></div>
+      </section>
+      <aside class="tip"><span class="tip-symbol">↳</span><p><strong>Дай порту понятное имя.</strong> Нажми на карандаш рядом с проектом, чтобы подписать его — например, SafeWay. Имя останется, даже когда проект выключен.</p><span class="key-hint">автообновление / 8 сек</span></aside>
+    </main>
+    <footer class="page-footer"><span><span class="status-dot"></span>Данные остаются на твоём компьютере</span><span>localhost tree <span class="footer-version">v1.0</span></span></footer>
+  </div>
+  <dialog id="edit-dialog"><form id="edit-form"><div class="dialog-heading"><h2>Название проекта</h2><button type="button" class="icon-button" id="close-dialog" aria-label="Закрыть">×</button></div><p id="edit-port"></p><label for="project-name">Как подписать этот порт</label><input id="project-name" maxlength="100" placeholder="Например, SafeWay" autocomplete="off"><p class="input-help">Оставь поле пустым, чтобы вернуть автоматическое название.</p><div class="dialog-actions"><button type="button" class="button" id="cancel-edit">Отмена</button><button type="submit" class="button primary" id="save-name">Сохранить</button></div><p id="edit-error" role="alert" hidden></p></form></dialog>
+</body>
+</html>
